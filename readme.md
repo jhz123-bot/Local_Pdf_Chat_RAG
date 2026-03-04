@@ -1,3 +1,4 @@
+
 # 📄 Paper Reading Copilot (Local_Pdf_Chat_RAG)
 
 一个面向“论文阅读助手”的本地化 RAG + Agentic RAG 项目。默认模式仍是普通问答；可选开启 Agent Mode 获取 citation-aware 证据展示。
