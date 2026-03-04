@@ -64,25 +64,28 @@ app.add_middleware(
 class QuestionRequest(BaseModel):
     question: str
     enable_web_search: bool = False
+    agent_mode: bool = False
 
 class AnswerResponse(BaseModel):
+    task: str
     answer: str
-    sources: List[Dict[str, Any]]
-    metadata: Dict[str, Any]
+    items: List[Dict[str, Any]]
+    retrieval: Dict[str, Any]
+    supported: bool
 
 class FileProcessResult(BaseModel):
     status: str
     message: str
     file_info: Optional[Dict[str, Any]] = None
 
-async def process_answer_stream(question: str, enable_web_search: bool):
+async def process_answer_stream(question: str, enable_web_search: bool, agent_mode: bool = False):
     """处理流式回答，模拟同步函数的异步版本"""
     progress = ProgressCallback()
     answer = ""
     
     # 创建生成器函数的包装器
     def run_stream():
-        for response, status in rag_demo.stream_answer(question, enable_web_search, progress):
+        for response, status in rag_demo.stream_answer(question, enable_web_search, "siliconflow", agent_mode, progress):
             nonlocal answer
             answer = response
             yield response, status
@@ -161,7 +164,7 @@ async def ask_question(req: QuestionRequest):
     
     try:
         # 使用流式回答生成结果
-        answer = await process_answer_stream(req.question, req.enable_web_search)
+        answer = await process_answer_stream(req.question, req.enable_web_search, req.agent_mode)
         
         # 提取可能的来源信息
         sources = []
@@ -181,13 +184,18 @@ async def ask_question(req: QuestionRequest):
                 for section in source_sections:
                     sources.append({"type": "引用", "content": section.strip()})
         
+        retrieval = {
+            "agent_mode": req.agent_mode,
+            "enable_web_search": req.enable_web_search,
+            "model": "siliconflow"
+        }
+
         return {
+            "task": "qa",
             "answer": answer,
-            "sources": sources,
-            "metadata": {
-                "enable_web_search": req.enable_web_search,
-                "model": "deepseek-r1:1.5b"
-            }
+            "items": sources,
+            "retrieval": retrieval,
+            "supported": len(sources) > 0
         }
     except Exception as e:
         logger.error(f"问答失败: {str(e)}")
