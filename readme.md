@@ -133,6 +133,22 @@ python rag_demo.py
 * 启用后会使用 Agentic RAG 路径，执行检索路由、证据核对与一次回退检索。
 * 最终回答会附加折叠的 `Evidence snippets (citation-aware)` 区域。
 
+### 论文阅读助手（PR2）
+
+在 `💬 问答对话` 页新增 4 个论文垂直按钮（复用 Agent 检索与证据核对能力）：
+
+1. `Extract Contributions`
+2. `Extract Method Pipeline`
+3. `Extract Experiment Setup`
+4. `Generate Paper Summary`
+
+使用方式：
+* 在输入框输入论文问题/主题；
+* 点击任一按钮即可输出结构化 `items`；
+* 每条 `item` 附带可折叠 evidence（含 `source/page`，若无页码则为 null）。
+
+建议同时开启 `Agent Mode (citation-aware)` 以获得更稳定的路由与证据回退检索。
+
 ## 📦 核心依赖（按功能层分类）
 
 ### 用户交互层
