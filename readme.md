@@ -26,6 +26,7 @@
 *   📁 **文档处理**：支持上传并处理多种类型的文档（.pdf, .txt, .docx, .md, .html, .csv, .xls, .xlsx），自动分割和向量化。
 *   🔍 **混合检索**：结合FAISS进行语义检索和BM25进行关键词检索，提高检索召回率和准确性。
 *   🔄 **结果重排序**：支持交叉编码器（CrossEncoder）和LLM对检索结果进行重排序，优化相关性。
+*   🤖 **Agent Mode (可选)**：可启用多步编排（检索路由 + 证据核对 + 回退检索一次），并在回答后展示 citation-aware evidence snippets。
 *   🌐 **联网搜索增强 (可选)**：通过SerpAPI获取实时网络信息，增强回答的时效性（需配置API密钥）。
 *   🗣️ **本地/云端**：可选择使用本地Ollama大模型（如DeepSeek-R1系列）或云端SiliconFlow API进行推理。
 *   🖥️ **用户友好界面**：基于Gradio构建交互式Web界面，支持多种主题界面。
@@ -125,6 +126,12 @@ graph TD
 python rag_demo.py
 ```
 服务启动后，通常会自动在浏览器中打开 `http://127.0.0.1:17995` (或自动选择的其他可用端口)。
+
+### Agent Mode 开启方式
+
+* 在「💬 问答对话」页勾选 `Agent Mode (citation-aware)`（默认关闭，不影响原默认 RAG）。
+* 启用后会使用 Agentic RAG 路径，执行检索路由、证据核对与一次回退检索。
+* 最终回答会附加折叠的 `Evidence snippets (citation-aware)` 区域。
 
 ## 📦 核心依赖（按功能层分类）
 
