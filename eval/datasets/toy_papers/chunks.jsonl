@@ -1,0 +1,6 @@
+{"id":"c1","section_title":"Abstract","page":1,"content":"We propose a framework for paper reading assistance. Our main contributions include citation-aware extraction and stable fallback retrieval."}
+{"id":"c2","section_title":"Introduction","page":1,"content":"The problem is academic paper understanding with reliable evidence grounding."}
+{"id":"c3","section_title":"Method","page":2,"content":"Our method pipeline has three stages: preprocess input, encoder module, and structured output generation."}
+{"id":"c4","section_title":"Experiments","page":3,"content":"We evaluate on dataset ToySet and compare against baseline methods with metric F1."}
+{"id":"c5","section_title":"Results","page":4,"content":"The framework outperforms baseline by +3.2 F1 on ToySet benchmark."}
+{"id":"c6","section_title":"Conclusion","page":5,"content":"A limitation is dependence on high quality section metadata; future work includes larger datasets."}

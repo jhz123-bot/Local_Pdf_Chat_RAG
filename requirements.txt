@@ -1,26 +1,28 @@
-# 核心依赖
-gradio>=3.50.0
-pdfminer.six>=20221105
-sentence-transformers>=2.2.2
-faiss-cpu
-langchain-text-splitters
-python-dotenv>=1.0.0
-requests>=2.31.0
-markdown>=3.4.3
-fastapi>=0.104.1
-uvicorn>=0.23.2
-python-multipart>=0.0.6
-urllib3>=1.26.16
-jieba>=0.42.1
-pydantic>=2.9.2,<2.11.0
+# Core app dependencies (pinned for reproducibility)
+gradio==4.44.1
+pdfminer.six==20231228
+sentence-transformers==3.0.1
+faiss-cpu==1.8.0.post1
+langchain-text-splitters==0.2.2
+python-dotenv==1.0.1
+requests==2.32.3
+markdown==3.7
+fastapi==0.115.2
+uvicorn==0.30.6
+python-multipart==0.0.12
+urllib3==2.2.3
+jieba==0.42.1
+pydantic==2.9.2
 
-# 处理相关的pdf、word等文件所需相关库
-python-docx
-python-pptx
+# Document parsing
+python-docx==1.1.2
+python-pptx==0.6.23
+pandas==2.2.3
+psutil==6.1.0
 
-# 工具依赖
-numpy>=1.26.1
-rank-bm25>=0.2.2
+# Utilities
+numpy==1.26.4
+rank-bm25==0.2.2
 
-
-
+# Test
+pytest==8.3.3
