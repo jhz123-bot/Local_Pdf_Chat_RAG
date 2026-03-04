@@ -58,8 +58,19 @@ os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 # 配置代理绕过规则，避免本地访问（如 127.0.0.1）走代理导致无法连接
 os.environ['NO_PROXY'] = 'localhost,127.0.0.1'
 
-# 初始化向量嵌入模型，用于将文本转换为向量(英文优化模型)
-EMBED_MODEL = SentenceTransformer('all-MiniLM-L6-v2')
+# 初始化向量嵌入模型（懒加载，避免启动时强依赖网络）
+EMBED_MODEL = None
+embed_model_lock = threading.Lock()
+
+
+def get_embed_model():
+    """懒加载 embedding 模型，启动 UI 时不强制下载模型。"""
+    global EMBED_MODEL
+    if EMBED_MODEL is None:
+        with embed_model_lock:
+            if EMBED_MODEL is None:
+                EMBED_MODEL = SentenceTransformer('all-MiniLM-L6-v2')
+    return EMBED_MODEL
 # 若主要处理中文文档，可切换为中文优化模型，例如：
 # EMBED_MODEL = SentenceTransformer('shibing624/text2vec-base-chinese')
 
@@ -241,7 +252,7 @@ def recursive_retrieval(initial_query, max_iterations=3, enable_web_search=False
                 logging.error(f"网络搜索出错: {str(e)}")
 
         # 语义检索
-        query_embedding = EMBED_MODEL.encode([query])
+        query_embedding = get_embed_model().encode([query])
         query_embedding_np = np.array(query_embedding).astype('float32')
 
         semantic_results_docs = []
@@ -735,7 +746,7 @@ def process_multiple_pdfs(files: List[Any], progress=gr.Progress()):
         # 批量生成嵌入向量
         if all_chunks:
             progress(0.8, desc="生成文本嵌入...")
-            embeddings = EMBED_MODEL.encode(all_chunks, show_progress_bar=True)
+            embeddings = get_embed_model().encode(all_chunks, show_progress_bar=True)
             embeddings_np = np.array(embeddings).astype('float32')
 
             # 构建FAISS索引
@@ -954,7 +965,7 @@ def get_agent_runner():
         from agent.runner import AgenticRAGRunner
 
         agent_runner_cache = AgenticRAGRunner(
-            embed_model=EMBED_MODEL,
+            embed_model=get_embed_model(),
             faiss_index=faiss_index,
             id_order=faiss_id_order_for_index,
             content_map=faiss_contents_map,
@@ -1020,7 +1031,7 @@ def get_paper_extractor_service(model_choice: str = "siliconflow"):
 
     if paper_extractor_service_cache is None:
         paper_extractor_service_cache = build_service(
-            embed_model=EMBED_MODEL,
+            embed_model=get_embed_model(),
             faiss_index=faiss_index,
             id_order=faiss_id_order_for_index,
             content_map=faiss_contents_map,
@@ -1030,7 +1041,7 @@ def get_paper_extractor_service(model_choice: str = "siliconflow"):
             llm_callable=llm_callable,
         )
     else:
-        paper_extractor_service_cache.embed_model = EMBED_MODEL
+        paper_extractor_service_cache.embed_model = get_embed_model()
         paper_extractor_service_cache.faiss_index = faiss_index
         paper_extractor_service_cache.id_order = faiss_id_order_for_index
         paper_extractor_service_cache.content_map = faiss_contents_map
@@ -2298,8 +2309,7 @@ with gr.Blocks(
                         label="对话历史",
                         height=600,  # 增加高度
                         elem_classes="chat-container",
-                        show_label=False,
-                        type="tuples"
+                        show_label=False
                     )
 
                     status_display = gr.HTML("", elem_id="status-display")
@@ -2937,12 +2947,12 @@ def is_port_available(port):
 
 
 def check_environment():
-    """环境依赖检查（云端API版本）"""
+    """环境依赖检查（允许无 key 启动 UI）。"""
     # 检查 SiliconFlow API 密钥
     if not SILICONFLOW_API_KEY:
-        print("❌ 未配置 SiliconFlow API 密钥")
-        print("请在 .env 文件中设置 SILICONFLOW_API_KEY")
-        return False
+        print("⚠️ 未配置 SiliconFlow API 密钥：仍可启动 UI。")
+        print("⚠️ 使用 siliconflow 模型时会提示未配置 key；可切换本地 ollama。")
+        return True
 
     print("✅ SiliconFlow API 密钥已配置")
     print("✅ 跳过本地 Ollama 检查，使用云端 API 模式")
